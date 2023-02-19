@@ -1,0 +1,176 @@
+#include <iostream>
+#include <sstream>
+#include <iosfwd>
+#include "rational.h"
+
+int gcd(int a, int b);
+
+class Rational{
+
+public:
+    Rational():num(0), denum(1){}
+    Rational(int n): num(n), denum(1){}
+    Rational(int n, int d):num(n), denum(d){};
+
+    static const char slash = '/';
+
+    Rational normalize(Rational sth)
+    {
+        if (sth.denum < 0)
+        {
+            sth.num = (-sth.num);
+            sth.denum = -sth.denum;
+        }
+        int d_ = gcd(sth.num, sth.denum);
+        sth.num /= d_;
+        sth.denum /= d_;
+        return (*this);
+    };
+    // comparative operators
+
+    bool operator==(const Rational& lhs)
+    const {
+        return (lhs.num == num) && (lhs.denum == denum);
+    }
+
+    bool operator!=(const Rational& lhs)
+    const {
+        return not((lhs.num == num) && (lhs.denum == denum));
+    }
+
+    bool operator>(const Rational& lhs)
+    const {
+        return (lhs.num * denum) > (num * lhs.denum);
+    }
+
+    bool operator<(const Rational& lhs)
+    const {
+        return (lhs.num * denum) < (num * lhs.denum);
+    }
+
+    Rational operator-(const Rational& sth) {
+        return {-num, denum};
+    }
+
+    // operators with =
+
+    Rational operator+=(const Rational& rhs)
+    {
+        Rational ans = ((num * rhs.denum) + (rhs.num * denum), denum * rhs.denum);
+        return normalize(ans);
+    }
+
+    Rational operator-=(const Rational& rhs)
+    {
+        Rational ans = ((num * rhs.denum) - (rhs.num * denum), denum * rhs.denum);
+        return normalize(ans);
+    }
+
+    Rational operator*=(const Rational& rhs)
+    {
+        Rational ans = (num * rhs.num, denum * rhs.denum);
+        return normalize(ans);
+    }
+
+    Rational operator/=(const Rational& rhs)
+    {
+        Rational ans = (num * rhs.denum, denum * rhs.num);
+        return normalize(ans);
+    }
+
+    std::ostream& writeTo(std::ostream& ostrm) const;
+    std::istream& readFrom(std::istream& istrm);
+
+    int num = 0;
+    int denum = 1;
+
+private:
+    int32_t num_{0};
+    int32_t denum_{1};
+};
+Rational normalize(Rational sth)
+{
+    if (sth.denum == 0){};
+    if (sth.denum < 0)
+    {
+        sth.num = (-sth.num);
+        sth.denum = -sth.denum;
+    }
+    int d = gcd(sth.num, sth.denum);
+    sth.num /= d;
+    sth.denum /= d;
+    return (sth.num, sth.denum);
+};
+
+inline std::ostream& operator<<(std::ostream& ostrm, const Rational& sth)
+{
+    return sth.writeTo(ostrm);
+}
+inline std::istream& operator>>(std::istream& istrm, Rational& sth)
+{
+    return sth.readFrom(istrm);
+}
+
+std::ostream& Rational::writeTo(std::ostream& ostrm) const
+{
+    ostrm << num << slash << denum;
+    return ostrm;
+}
+
+std::istream& Rational::readFrom(std::istream &istrm)
+{
+    int numer = 0;
+    int denumer = 0;
+    char slash = '/';
+    istrm >> numer >> slash >> denumer;
+    if (istrm.good()){
+        if (Rational::slash == slash){
+            num = numer;
+            denum = denumer;
+        } else {
+            istrm.setstate(std::ios_base::failbit);
+        }
+    }
+    return istrm;
+}
+
+Rational operator+(const Rational& lhs, const Rational& rhs)
+{
+    Rational ans;
+    ans = ((lhs.num * rhs.denum) + (rhs.num * lhs.denum), lhs.denum * rhs.denum);
+    return normalize(ans);
+}
+
+Rational operator-(const Rational& lhs, const Rational& rhs)
+{
+    Rational ans;
+    ans = ((lhs.num * rhs.denum) - (rhs.num * lhs.denum), lhs.denum * rhs.denum);
+    return normalize(ans);
+}
+
+Rational operator*(const Rational& lhs, const Rational& rhs)
+{
+    Rational ans = (lhs.num * rhs.num, lhs.denum * rhs.denum);
+    return normalize(ans);
+}
+
+Rational operator/(const Rational& lhs, const Rational& rhs)
+{
+    Rational ans = (lhs.num * rhs.denum, lhs.denum * rhs.num);
+    return normalize(ans);
+}
+
+int gcd(int a, int b)
+{
+    while(a != 0 && b != 0)
+    {
+        if (a > b) {a %= b;}
+        else {b %= a;}
+    } return (a + b);
+}
+
+int main() {
+    Rational bukva = (5, 4);
+    std::cout << normalize(bukva);
+    return 0;
+}
